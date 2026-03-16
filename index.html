@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Happy Birthday 🎂</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+text-align:center;
+background:linear-gradient(#ffb6e6,#ffe6fa);
+overflow-x:hidden;
+}
+
+h1{
+color:white;
+font-size:50px;
+}
+
+button{
+padding:12px 20px;
+border:none;
+border-radius:20px;
+background:#ff4da6;
+color:white;
+font-size:18px;
+cursor:pointer;
+margin:10px;
+}
+
+button:hover{
+background:#ff1a8c;
+}
+
+/* Balloons */
+
+.balloon{
+position:absolute;
+font-size:40px;
+animation:float 6s linear infinite;
+}
+
+@keyframes float{
+0%{transform:translateY(100vh)}
+100%{transform:translateY(-10vh)}
+}
+
+/* Cake */
+
+.cake{
+font-size:120px;
+position:relative;
+display:inline-block;
+}
+
+#flame{
+position:absolute;
+top:-20px;
+left:55px;
+font-size:40px;
+animation:flicker 0.3s infinite;
+}
+
+@keyframes flicker{
+0%{transform:scale(1)}
+50%{transform:scale(1.2)}
+100%{transform:scale(1)}
+}
+
+/* Slideshow */
+
+.slideshow{
+max-width:400px;
+margin:auto;
+}
+
+.slides{
+width:100%;
+border-radius:20px;
+display:none;
+box-shadow:0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Wish jar */
+
+#wishInput{
+padding:10px;
+border-radius:10px;
+border:none;
+width:200px;
+}
+
+.wish{
+background:white;
+margin:10px auto;
+padding:10px;
+border-radius:10px;
+width:250px;
+}
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+pointer-events:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🎉 Happy Birthday 🎉</h1>
+
+<p>Make a wish and blow the candle 💨</p>
+
+<div class="cake">
+🎂
+<div id="flame">🔥</div>
+</div>
+
+<br>
+
+<button onclick="startListening()">Blow Candle 💨</button>
+<button onclick="cutCake()">Cut Cake 🔪</button>
+
+<p id="message"></p>
+
+<h2>📸 Memories</h2>
+
+<div class="slideshow">
+
+<img class="slides" src="photo1.jpg">
+<img class="slides" src="photo2.jpg">
+<img class="slides" src="photo3.jpg">
+<img class="slides" src="photo4.jpg">
+
+</div>
+
+<h2>💖 Wish Jar</h2>
+
+<input id="wishInput" placeholder="Write a wish">
+<button onclick="addWish()">Add Wish</button>
+
+<div id="wishes"></div>
+
+<audio autoplay loop>
+<source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">
+</audio>
+
+<canvas id="fireworks"></canvas>
+
+<script>
+
+/* Balloons */
+
+function createBalloon(){
+
+let balloon=document.createElement("div");
+balloon.className="balloon";
+balloon.innerHTML="🎈";
+balloon.style.left=Math.random()*100+"vw";
+
+document.body.appendChild(balloon);
+
+setTimeout(()=>{balloon.remove()},6000);
+
+}
+
+setInterval(createBalloon,800);
+
+/* Slideshow */
+
+let slideIndex=0;
+
+function showSlides(){
+
+let slides=document.getElementsByClassName("slides");
+
+for(let i=0;i<slides.length;i++){
+slides[i].style.display="none";
+}
+
+slideIndex++;
+
+if(slideIndex>slides.length){
+slideIndex=1;
+}
+
+slides[slideIndex-1].style.display="block";
+
+setTimeout(showSlides,3000);
+
+}
+
+showSlides();
+
+/* Wish Jar */
+
+function addWish(){
+
+let input=document.getElementById("wishInput");
+
+if(input.value!=""){
+
+let div=document.createElement("div");
+div.className="wish";
+div.innerHTML="💖 "+input.value;
+
+document.getElementById("wishes").appendChild(div);
+
+input.value="";
+
+}
+
+}
+
+/* Cake Cut */
+
+function cutCake(){
+
+document.getElementById("message").innerHTML="🎂 Cake cut! Let's celebrate!";
+
+}
+
+/* Candle Blow with microphone */
+
+let audioContext;
+let analyser;
+
+function startListening(){
+
+navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+
+audioContext=new AudioContext();
+
+let microphone=audioContext.createMediaStreamSource(stream);
+
+analyser=audioContext.createAnalyser();
+
+microphone.connect(analyser);
+
+let data=new Uint8Array(analyser.frequencyBinCount);
+
+function detectBlow(){
+
+analyser.getByteFrequencyData(data);
+
+let volume=data.reduce((a,b)=>a+b)/data.length;
+
+if(volume>50){
+
+document.getElementById("flame").style.display="none";
+
+document.getElementById("message").innerHTML="✨ Wish granted! Happy Birthday! ✨";
+
+startFireworks();
+
+}
+
+requestAnimationFrame(detectBlow);
+
+}
+
+detectBlow();
+
+});
+
+}
+
+/* Fireworks */
+
+const canvas=document.getElementById("fireworks");
+const ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+function startFireworks(){
+
+for(let i=0;i<20;i++){
+
+setTimeout(()=>{
+
+let x=Math.random()*canvas.width;
+let y=Math.random()*canvas.height/2;
+
+for(let j=0;j<50;j++){
+
+ctx.beginPath();
+ctx.arc(x+Math.random()*100-50,y+Math.random()*100-50,2,0,Math.PI*2);
+ctx.fillStyle="white";
+ctx.fill();
+
+}
+
+},i*200);
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
